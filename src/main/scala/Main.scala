@@ -17,6 +17,7 @@ object Main extends App {
     "Hello: World",
     "Allow: /search/about",
     "User-Agent: sombebody",
+    "Allow:",
   )
   val fullcontent = tokens.fold("")((a, b) => s"${a}${b}\n")
 //

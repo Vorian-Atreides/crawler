@@ -8,12 +8,12 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
   val supportedLines = Table(
     ("data"),
     ("User-Agent: *"),
-    ("User-Agent: google-bot-news"),
-    ("User-Agent: google"),
-    ("User-Agent: google # with a comment"),
+    ("user-Agent: google-bot-news"),
+    ("User-agent: google"),
+    ("user-agent: google # with a comment"),
     ("Allow: /"),
     ("Disallow: /private"),
-    ("Allow: /images # with a comment"),
+    ("allow: /images # with a comment"),
   )
 
   property("supported token should be parsed without error") {
@@ -30,6 +30,7 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
     ("# Just a comment about something important."),
     ("\n"),
     ("      "),
+    ("Allow:"),
   )
 
   property("comments and empty lines should not produce a token nor an error") {
@@ -52,6 +53,28 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
       val result = LexicalParser.parse(data)
       result.errors.length should be (1)
       result.tokens.length should be (0)
+    }
+  }
+
+  val maintainOrder = Table(
+    ("data"),
+    (
+      """|User-agent: *
+        |Disallow: /search
+        |Allow: /search/about
+        |Allow: /search/static""".stripMargin
+    )
+  )
+
+  property("the order between directives must be maintained") {
+    forAll(maintainOrder) { (data: String) =>
+      val result = LexicalParser.parse(data)
+      val lines = data.split("\n")
+
+      result.errors.length should be (0)
+      result.tokens.length should be (lines.length)
+
+      // TODO: add comparison between Token and strings.
     }
   }
 

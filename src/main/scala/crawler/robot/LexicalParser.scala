@@ -50,12 +50,13 @@ object LexicalParser {
   private def split(line: String): Try[List[String]] =
     Try(line.split(":").toList)
 
-  private def parseLine(line: String): Either[String, Token] = split(line) match {
-    case Failure(_) => Left(s"missing character ':'")
-    case Success(key :: value) =>
-      token(key, sanitize(value.mkString("")))
-    case Success(_) =>
-      Left(s"zero or more than one character ':'")
+  private def parseLine(line: String): Either[String, Token] = line.indexOf(":") match {
+    case -1 => Left(s"missing character ':'")
+    case other if other + 1 < line.length =>
+      val key = line.take(other)
+      val value = line.substring(other+1)
+      token(key, sanitize(value))
+    case _ => Left("the given field has no associated value")
   }
 
   private def isIgnoredLine(line: String): Boolean =
