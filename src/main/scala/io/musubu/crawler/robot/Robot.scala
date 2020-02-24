@@ -1,22 +1,26 @@
-package crawler.robot
+package io.musubu.crawler.robot
 
 import io.lemonlabs.uri._
+import cats.implicits._
+
+import Lexical._
 
 object Robot {
-  def fromString(data: String): Robot = {
-    val parsingResult = LexicalParser.parse(data)
+  def apply(data: String): Robot = {
+    val parsingResult = LexicalParser.parse[List](data)
     val groups = SyntacticParser.compile(parsingResult.tokens)
-    Robot(groups)
+    new Robot(groups)
   }
 }
 
-case class Robot(groups: Map[UserAgent, List[Directive]]) {
+class Robot private (groups: Map[UserAgent, List[Directive]]) {
+
   private def longestMatchingUserAgent(ua: String): UserAgent =
     LazyList.range(ua.length, 0, -1).
       map(n => SpecificAgent(ua.take(n))).
       find{ ua =>
         groups.contains(ua)
-      }.getOrElse(AnyAgent)
+      }.getOrElse(AnyAgent())
 
   private def longestMatchingPath(ua: UserAgent)(path: String): Boolean = {
     val uri = Uri.parse(path)
@@ -24,7 +28,8 @@ case class Robot(groups: Map[UserAgent, List[Directive]]) {
       directives.find { directive =>
         uri.path == Path.parse(directive.path)
       }
-    }.map {
+    } map {
+      case DefaultDirective() => true
       case Allow(_) => true
       case Disallow(_) => false
     } getOrElse (true)

@@ -1,5 +1,6 @@
-package crawler.robot
+package io.musubu.crawler.robot
 
+import cats.implicits._
 import org.scalatest._
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.matchers.should._
@@ -18,7 +19,7 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
 
   property("supported token should be parsed without error") {
     forAll(supportedLines) { (data: String) =>
-      val result = LexicalParser.parse(data)
+      val result = LexicalParser.parse[List](data)
       result.errors.length should be (0)
       result.tokens.length should be (1)
     }
@@ -30,12 +31,11 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
     ("# Just a comment about something important."),
     ("\n"),
     ("      "),
-    ("Allow:"),
   )
 
   property("comments and empty lines should not produce a token nor an error") {
     forAll(ignoredLines) { (data: String) =>
-      val result = LexicalParser.parse(data)
+      val result = LexicalParser.parse[List](data)
       result.errors.length should be (0)
       result.tokens.length should be (0)
     }
@@ -46,11 +46,12 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
     ("Sitemap: https://something.com/sitemap.xml"),
     ("Unsupported: key and value"),
     ("not a key value format"),
+    ("Allow:"),
   )
 
   property("unsupported lines should return an error and no token") {
     forAll(invalidLines) { (data: String) =>
-      val result = LexicalParser.parse(data)
+      val result = LexicalParser.parse[List](data)
       result.errors.length should be (1)
       result.tokens.length should be (0)
     }
@@ -68,7 +69,7 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
 
   property("the order between directives must be maintained") {
     forAll(maintainOrder) { (data: String) =>
-      val result = LexicalParser.parse(data)
+      val result = LexicalParser.parse[List](data)
       val lines = data.split("\n")
 
       result.errors.length should be (0)
@@ -405,7 +406,7 @@ class LexicalParserSpec extends PropSpec with TableDrivenPropertyChecks with Mat
 
   property("valid multi-lines robots.txt") {
     forAll(validMultilines) { (data: String) =>
-      val result = LexicalParser.parse(data)
+      val result = LexicalParser.parse[List](data)
       // Calculate the number of supported directive minus the unsupported Sitemap.
       val expected = data.split("([Aa]llow:|[Dd]isallow:|[Uu]ser-[Aa]gent:)").length - 1
       result.errors.length should be (1)

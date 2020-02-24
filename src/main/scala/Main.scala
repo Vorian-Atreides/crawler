@@ -1,4 +1,4 @@
-import crawler.robot.Robot
+import io.musubu.crawler.robot.Robot
 
 object Main extends App {
   val tokens = Array(
@@ -28,7 +28,7 @@ object Main extends App {
 //  }
 //
 //  val tree = SyntacticParser.buildRobot(results.right.get)
-  val robot = Robot.fromString(fullcontent)
+  val robot = Robot(fullcontent)
   println(robot)
 
   val googleDirectives = robot.isAllowed("google-bot")

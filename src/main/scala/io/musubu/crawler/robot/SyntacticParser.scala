@@ -1,8 +1,10 @@
-package crawler.robot
+package io.musubu.crawler.robot
 
 import scala.collection.immutable.HashMap
 
-object SyntacticParser {
+private object SyntacticParser {
+  import Lexical._
+
   trait Group
   case class UserAgentLeaf(userAgent: UserAgent, next: DirectiveGroup) extends Group
 
@@ -35,7 +37,7 @@ object SyntacticParser {
   }
 
   private def none(token: Token, acc: DirectiveGroup): List[Group] = token match {
-    case ua: UserAgent => List(UserAgentLeaf(ua, DirectiveLeaf(DefaultDirective, acc)))
+    case ua: UserAgent => List(UserAgentLeaf(ua, DirectiveLeaf(DefaultDirective(), acc)))
     case d: Directive => List(DirectiveLeaf(d, acc))
   }
 
